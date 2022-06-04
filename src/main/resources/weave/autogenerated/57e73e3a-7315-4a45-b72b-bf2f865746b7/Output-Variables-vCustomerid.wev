@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_57e73e3a_7315_4a45_b72b_bf2f865746b7_Output_Variables_vCustomerid = Any
+

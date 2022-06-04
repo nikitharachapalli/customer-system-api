@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	
+	
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="d7faef3c-6f66-4551-a26a-c87483fe3391" >
+		<db:my-sql-connection host="mudb.learn.mulesoft.com" port="3306" user="mule" password="mule" database="training" />
+	</db:config>
+	<flow name="fetchcustomerdetails-implFlow" doc:id="57e73e3a-7315-4a45-b72b-bf2f865746b7" >
+		<logger level="INFO" doc:name="Logger" doc:id="b33f47a7-a0d1-47ca-9e0e-070450c0a8df" message="start fetchCustomerDetails Flow"/>
+		<choice doc:name="Choice" doc:id="5ff212c9-52c0-4b65-9c9d-bccde90d6277" >
+			<when expression="#[attributes.queryParams.id != null]">
+				<ee:transform doc:name="Transform Message" doc:id="6681c113-5c65-4980-9a16-6d5de4c2539c" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="vCustomerid" ><![CDATA[%dw 2.0
+output application/json
+---
+
+ attributes.queryParams.id
+]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<db:select doc:name="Select" doc:id="cafe2a97-9aa0-4be2-87da-df4929722c4e" config-ref="Database_Config">
+					<db:sql ><![CDATA[select * from american where id =:customerid]]></db:sql>
+					<db:input-parameters ><![CDATA[#[{
+	"customerid": vars.vCustomerid
+}]]]></db:input-parameters>
+				</db:select>
+				<ee:transform doc:name="Transform Message" doc:id="3ccea80f-dc83-467d-bded-f73d1e52f908" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="868b6453-9086-42dd-8213-3389ab550c64" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"Please Provide queryParametre "
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="127685e7-ef01-4e82-9259-75c9bbafcd8b" message="completed fetch customer details flow: #[payload]"/>
+	</flow>
+</mule>
